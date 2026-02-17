@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>音符射手 元祖BanG Dream</title>
+  <style>
+    :root {
+      --primary-color: #ff69b4; /* Hot Pink */
+      --secondary-color: #9370db; /* Medium Purple */
+      --text-color: #ffffff;
+      --shadow-color: rgba(0, 0, 0, 0.5);
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #333;
+      color: var(--text-color);
+      font-family: "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100dvh;
+      overflow: hidden;
+    }
+
+    #game-container {
+      position: relative;
+      background-color: #6c757d;
+
+      /* 保持 9:16 比例，最大化铺满 */
+      width: 100vw;
+      height: 100dvh;
+      aspect-ratio: 9 / 16;
+
+      /* 限制缩放，保证不会超出屏幕 */
+      max-width: 500px;
+      max-height: 100dvh;
+
+      /* 居中显示，超出部分自动裁切 */
+      object-fit: contain;
+      overflow: hidden;
+
+      box-shadow: 0 0 20px var(--shadow-color);
+    }
+
+    #game-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #707070; /* Road color */
+    }
+
+    .start-adjust {
+      justify-content: flex-start !important;
+    }
+
+    .game-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background-color: rgba(0, 0, 0, 0.3);
+      text-align: center;
+      z-index: 10;
+      transition: opacity 0.5s ease;
+      padding-top: 0;
+    }
+
+    .game-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .overlay-title {
+      margin: 15px 0px;
+      font-size: 2rem;
+      font-weight: bold;
+      text-shadow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color);
+      animation: pulse 1.5s infinite;
+      @media (max-width: 500px) {
+        font-size: 1.8rem;
+      }
+      @media (max-width: 375px) {
+        font-size: 1.6rem;
+        margin: 10px 0px;
+      }
+    }
+
+    .result-text,
+    .overlay-text {
+      font-size: 22px;
+      font-weight: 600; /* 稍微加粗 */
+      color: #ffffff; /* 白色 */
+      text-shadow: -2px -2px 0 #000,
+      2px -2px 0 #000,
+      -2px 2px 0 #000,
+      2px 2px 0 #000,
+      0 0 10px rgba(255, 105, 180, 0.8);
+      /*text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 0 6px rgba(255, 105, 180, 0.6);  阴影 + 粉色光晕 */
+      margin: 10px 0;
+      line-height: 1.5;
+      @media (max-width: 450px) {
+        font-size: 18px;
+        margin: 8px 0;
+      }
+    }
+
+    .result-text {
+      font-size: 24px;
+      line-height: 1.6;
+      margin: 0;
+      @media (max-width: 450px) {
+        font-size: 20px;
+      }
+    }
+
+    .result-text > div {
+      height: 1.6em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #result-total-text,
+    #result-combo-text {
+      height: 1.6em;
+      display: flex;
+      justify-content: center;
+    }
+
+    .result-rank,
+    .result-fullcombo {
+      height: 1.4em;
+      margin-left: 8px;
+      display: none;
+    }
+
+    .end-button,
+    .start-button {
+      padding: 10px 20px;
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: var(--secondary-color);
+      background-color: var(--text-color);
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      box-shadow: 0 5px 15px var(--shadow-color);
+      transition: transform 0.2s, box-shadow 0.2s;
+      @media (max-width: 400px) {
+        padding: 8px 16px;
+        font-size: 1.2rem;
+      }
+    }
+
+    .end-button:hover,
+    .start-button:hover {
+      transform: scale(1.1);
+      box-shadow: 0 8px 25px var(--shadow-color);
+    }
+
+    .end-button {
+      margin: 15px 0px;
+      @media (max-width: 400px) {
+        margin: 12px 0px;
+      }
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .difficulty-selector,
+    .language-selector {
+      display: flex;
+      gap: 10px;
+      margin: 10px 0;
+      transition: opacity 0.3s ease;
+      @media (max-width: 450px) {
+        margin: 5px 0;
+      }
+    }
+
+    .difficulty-selector.hidden,
+    .language-selector.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .contact-btn,
+    .difficulty-btn,
+    .lang-btn {
+      padding: 8px 12px;
+      font-size: 16px;
+      color: var(--text-color);
+      background-color: rgba(0, 0, 0, 0.5);
+      border: 2px solid transparent;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      @media (max-width: 450px) {
+        padding: 4px 8px;
+        font-size: 14px;
+      }
+    }
+
+    .contact-btn:hover,
+    .difficulty-btn:hover,
+    .lang-btn:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+      transform: scale(1.05);
+    }
+
+    .difficulty-btn.active,
+    .lang-btn.active {
+      border-color: var(--primary-color);
+      background-color: rgba(255, 105, 180, 0.3);
+    }
+
+    .contact-btn {
+      font-size: 14px;
+      padding: 6px 10px;
+      margin-top: 5px;
+    }
+
+    .contact-btn a {
+      color: var(--text-color);
+      text-decoration: none;
+    }
+
+    .game-ui {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .game-ui * {
+      pointer-events: auto;
+    }
+
+    .scoreboard {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+      @media (max-width: 450px) {
+        font-size: 16px;
+        top: 5px;
+        left: 5px;
+      }
+    }
+
+    .music-icon {
+      width: 28px;
+      height: 28px;
+      vertical-align: middle;
+      margin-right: 5px;
+      @media (max-width: 450px) {
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    .combo-display {
+      position: absolute;
+      top: 40px;
+      left: 10px;
+      display: flex;
+      align-items: center;
+      @media (max-width: 450px) {
+        top: 32px;
+        left: 5px;
+      }
+    }
+
+    .combo-icon {
+      width: 50px;
+      height: 25px;
+      @media (max-width: 450px) {
+        width: 40px;
+        height: 20px;
+      }
+    }
+
+    .combo-count {
+      font-size: 28px;
+      font-weight: bold;
+      margin-left: 5px;
+      color: #fff;
+      text-shadow: -2px -2px 0 #000,
+      2px -2px 0 #000,
+      -2px 2px 0 #000,
+      2px 2px 0 #000,
+      0 0 10px rgba(255, 105, 180, 0.8);
+      @media (max-width: 450px) {
+        font-size: 22px;
+      }
+    }
+
+    .hp-display {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      width: 120px;
+      height: 18px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 10px;
+      overflow: hidden;
+      @media (max-width: 450px) {
+        width: 100px;
+        height: 16px;
+        bottom: 5px;
+        left: 5px;
+      }
+    }
+
+    .hp-bar {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #ff4d4d, #ffcc00);
+      transition: width 0.3s;
+    }
+
+    .ranking-display {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+      @media (max-width: 450px) {
+        font-size: 16px;
+        top: 5px;
+        right: 5px;
+      }
+    }
+
+    .character-head {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid var(--primary-color);
+      object-fit: cover;
+      @media (max-width: 450px) {
+        width: 34px;
+        height: 34px;
+      }
+    }
+
+    .weapon-info {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      font-size: 16px;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 6px 10px;
+      border-radius: 10px;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+      @media (max-width: 450px) {
+        font-size: 14px;
+        padding: 4px 8px;
+        bottom: 5px;
+        right: 5px;
+      }
+    }
+
+    .hit-effect {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      pointer-events: none;
+      animation: hit 0.5s ease-out;
+    }
+
+    @keyframes hit {
+      0% {
+        transform: scale(0.8);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(1.5);
+        opacity: 0;
+      }
+    }
+
+    .result-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background-color: rgba(0, 0, 0, 0.4);
+      z-index: 20;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+      gap: 12px;
+    }
+
+    .result-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .result-image {
+      max-width: 80%;
+      height: auto;
+      margin-bottom: 0;
+      border: 3px solid var(--primary-color);
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(255, 105, 180, 0.7);
+    }
+
+    .result-rank-image,
+    .result-fullcombo-image {
+      height: 60px;
+      width: auto;
+      display: none;
+    }
+
+    .result-score {
+      font-size: 24px;
+      font-weight: bold;
+      margin: 0;
+      text-shadow: -2px -2px 0 #000,
+      2px -2px 0 #000,
+      -2px 2px 0 #000,
+      2px 2px 0 #000,
+      0 0 10px rgba(255, 105, 180, 0.8);
+    }
+
+    .result-combo {
+      font-size: 20px;
+      margin: 0;
+      text-shadow: -2px -2px 0 #000,
+      2px -2px 0 #000,
+      -2px 2px 0 #000,
+      2px 2px 0 #000,
+      0 0 10px rgba(255, 105, 180, 0.8);
+    }
+
+    .result-button {
+      padding: 10px 25px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--secondary-color);
+      background-color: var(--text-color);
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      box-shadow: 0 5px 15px var(--shadow-color);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .result-button:hover {
+      transform: scale(1.1);
+      box-shadow: 0 8px 25px var(--shadow-color);
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <canvas id="game-canvas"></canvas>
+
+    <!-- Game UI overlay -->
+    <div class="game-ui">
+      <div class="scoreboard">
+        <img class="music-icon" src="/assets/bangdream/img/kuma_icon.png" alt="Music Icon">
+        Score: <span id="score">0</span>
+      </div>
+
+      <div class="combo-display">
+        <img class="combo-icon" src="/assets/bangdream/img/combo.png" alt="Combo Icon">
+        <span class="combo-count" id="combo">0</span>
+      </div>
+
+      <div class="ranking-display">
+        Rank: <img class="result-rank" id="rank" src="" alt="Rank">
+      </div>
+
+      <img class="character-head" id="head" src="/assets/bangdream/img/head1.jpg" alt="Character Head">
+
+      <div class="hp-display">
+        <div class="hp-bar" id="hp-bar"></div>
+      </div>
+
+      <div class="weapon-info" id="weapon-info">
+        Weapon: Bullet 1
+      </div>
+    </div>
+
+    <!-- Start overlay -->
+    <div id="start-screen" class="game-overlay">
+      <div class="overlay-title">音符射手 元祖BanG Dream</div>
+      <div class="overlay-text">点击开始，击败来袭的音符怪物！</div>
+      <div class="difficulty-selector" id="difficulty-selector">
+        <button class="difficulty-btn active" data-difficulty="easy">简单</button>
+        <button class="difficulty-btn" data-difficulty="normal">普通</button>
+        <button class="difficulty-btn" data-difficulty="hard">困难</button>
+      </div>
+      <div class="language-selector" id="language-selector">
+        <button class="lang-btn active" data-lang="zh">中文</button>
+        <button class="lang-btn" data-lang="en">English</button>
+      </div>
+      <button class="start-button" id="start-button">开始游戏</button>
+    </div>
+
+    <!-- Result overlay -->
+    <div id="result-overlay" class="result-overlay">
+      <img id="result-image" class="result-image" src="" alt="Result">
+      <div class="result-text">
+        <div>总分：<span id="result-score">0</span></div>
+        <div>最高连击：<span id="result-combo">0</span></div>
+      </div>
+      <div class="result-text">
+        <img id="result-rank-image" class="result-rank-image" src="" alt="Rank">
+        <img id="result-fullcombo-image" class="result-fullcombo-image" src="/assets/bangdream/img/full_combo.png" alt="Full Combo">
+      </div>
+      <button class="result-button" id="restart-button">再来一局</button>
+    </div>
+
+    <audio id="menu-sound" src="/assets/bangdream/img/menu.mp3" preload="auto"></audio>
+    <audio id="battle-sound" src="/assets/bangdream/img/battle1.mp3" preload="auto" loop></audio>
+    <audio id="end-sound" src="/assets/bangdream/img/end.mp3" preload="auto"></audio>
+  </div>
+
+  <script>
+    // ===== 说明 =====
+    // 该文件来自参考仓库 bangdream.html，并做了最小改动：
+    // 1) 所有 img/audio 路径从 ./img/* 改为 /assets/bangdream/img/*
+    // 2) 保留其移动端适配(viewport + 9:16容器)
+
+    const canvas = document.getElementById("game-canvas");
+    const ctx = canvas.getContext("2d");
+
+    const gameContainer = document.getElementById("game-container");
+
+    function resizeCanvas() {
+      const rect = gameContainer.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    // Load images
+    const images = {};
+    const imageSources = {
+      player: "/assets/bangdream/img/player1.png",
+      enemy: "/assets/bangdream/img/chara1.png",
+      bullet: "/assets/bangdream/img/bullet1.png",
+      fire1: "/assets/bangdream/img/fire1.png",
+      fire2: "/assets/bangdream/img/fire2.png",
+      flash1: "/assets/bangdream/img/flash1.png",
+      flash2: "/assets/bangdream/img/flash2.png",
+      blood: "/assets/bangdream/img/blood.png",
+      defeat: "/assets/bangdream/img/defeat.png",
+      win: "/assets/bangdream/img/win.png",
+      complete: "/assets/bangdream/img/complete.png",
+      fullCombo: "/assets/bangdream/img/full_combo.png",
+      rankA: "/assets/bangdream/img/rank_a.png",
+      rankAP: "/assets/bangdream/img/rank_ap.png",
+      rankB: "/assets/bangdream/img/rank_b.png",
+      rankBP: "/assets/bangdream/img/rank_bp.png",
+      rankC: "/assets/bangdream/img/rank_c.png",
+      rankCP: "/assets/bangdream/img/rank_cp.png",
+      rankD: "/assets/bangdream/img/rank_d.png",
+      rankS: "/assets/bangdream/img/rank_s.png",
+      rankSP: "/assets/bangdream/img/rank_sp.png",
+      rankSS: "/assets/bangdream/img/rank_ss.png",
+      rankSSP: "/assets/bangdream/img/rank_ssp.png",
+      rankSSS: "/assets/bangdream/img/rank_sss.png",
+    };
+
+    let imagesLoaded = 0;
+    const totalImages = Object.keys(imageSources).length;
+
+    for (const key in imageSources) {
+      images[key] = new Image();
+      images[key].src = imageSources[key];
+      images[key].onload = () => {
+        imagesLoaded++;
+      };
+      images[key].onerror = () => {
+        console.error('[bangdream] image load failed:', key, imageSources[key]);
+      };
+    }
+
+    // UI elements
+    const scoreElement = document.getElementById("score");
+    const comboElement = document.getElementById("combo");
+    const startScreen = document.getElementById("start-screen");
+    const startButton = document.getElementById("start-button");
+    const restartButton = document.getElementById("restart-button");
+    const resultOverlay = document.getElementById("result-overlay");
+    const resultImage = document.getElementById("result-image");
+    const resultScore = document.getElementById("result-score");
+    const resultCombo = document.getElementById("result-combo");
+    const resultRankImage = document.getElementById("result-rank-image");
+    const resultFullComboImage = document.getElementById("result-fullcombo-image");
+
+    const menuSound = document.getElementById("menu-sound");
+    const battleSound = document.getElementById("battle-sound");
+    const endSound = document.getElementById("end-sound");
+
+    // Game variables
+    let score = 0;
+    let combo = 0;
+    let maxCombo = 0;
+    let hp = 100;
+    let gameOver = false;
+    let gameStarted = false;
+    let difficulty = "easy";
+
+    const player = {
+      x: canvas.width / 2,
+      y: canvas.height - 120,
+      width: 60,
+      height: 60,
+      speed: 5,
+    };
+
+    const bullets = [];
+    const enemies = [];
+    const hitEffects = [];
+
+    const difficultySettings = {
+      easy: { enemySpeed: 1.5, spawnRate: 120, bulletSpeed: 8, hpLoss: 5 },
+      normal: { enemySpeed: 2.5, spawnRate: 90, bulletSpeed: 10, hpLoss: 8 },
+      hard: { enemySpeed: 3.5, spawnRate: 70, bulletSpeed: 12, hpLoss: 12 },
+    };
+
+    // Difficulty buttons
+    const difficultyButtons = document.querySelectorAll(".difficulty-btn");
+    difficultyButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        difficultyButtons.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        difficulty = btn.dataset.difficulty;
+      });
+    });
+
+    // Start game
+    startButton.addEventListener("click", () => {
+      if (imagesLoaded < totalImages) return;
+
+      startScreen.classList.add("hidden");
+      gameStarted = true;
+      menuSound.pause();
+      battleSound.currentTime = 0;
+      battleSound.play().catch(() => {});
+      requestAnimationFrame(gameLoop);
+    });
+
+    // Restart game
+    restartButton.addEventListener("click", () => {
+      resetGame();
+    });
+
+    function resetGame() {
+      score = 0;
+      combo = 0;
+      maxCombo = 0;
+      hp = 100;
+      gameOver = false;
+      gameStarted = false;
+
+      bullets.length = 0;
+      enemies.length = 0;
+      hitEffects.length = 0;
+
+      resultOverlay.classList.remove("show");
+      startScreen.classList.remove("hidden");
+
+      battleSound.pause();
+      menuSound.currentTime = 0;
+      menuSound.play().catch(() => {});
+
+      scoreElement.textContent = score;
+      comboElement.textContent = combo;
+      document.getElementById("hp-bar").style.width = hp + "%";
+
+      resizeCanvas();
+    }
+
+    // Input (mouse/touch)
+    function shoot() {
+      if (!gameStarted || gameOver) return;
+      const settings = difficultySettings[difficulty];
+
+      bullets.push({
+        x: player.x + player.width / 2 - 10,
+        y: player.y,
+        width: 20,
+        height: 40,
+        speed: settings.bulletSpeed,
+      });
+    }
+
+    canvas.addEventListener("pointerdown", () => {
+      shoot();
+    });
+
+    // Player move
+    let pointerX = null;
+    canvas.addEventListener("pointermove", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      pointerX = e.clientX - rect.left;
+    });
+
+    function updatePlayer() {
+      if (pointerX === null) return;
+      player.x = pointerX - player.width / 2;
+      player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
+    }
+
+    function spawnEnemy() {
+      const x = Math.random() * (canvas.width - 60);
+      const settings = difficultySettings[difficulty];
+      enemies.push({ x, y: -60, width: 60, height: 60, speed: settings.enemySpeed });
+    }
+
+    function updateBullets() {
+      for (let i = bullets.length - 1; i >= 0; i--) {
+        bullets[i].y -= bullets[i].speed;
+        if (bullets[i].y + bullets[i].height < 0) bullets.splice(i, 1);
+      }
+    }
+
+    function updateEnemies(frameCount) {
+      const settings = difficultySettings[difficulty];
+      if (frameCount % settings.spawnRate === 0) {
+        spawnEnemy();
+      }
+
+      for (let i = enemies.length - 1; i >= 0; i--) {
+        enemies[i].y += enemies[i].speed;
+        if (enemies[i].y > canvas.height) {
+          enemies.splice(i, 1);
+          combo = 0;
+          hp -= settings.hpLoss;
+          document.getElementById("hp-bar").style.width = hp + "%";
+          if (hp <= 0) {
+            endGame(false);
+          }
+        }
+      }
+    }
+
+    function rectsIntersect(a, b) {
+      return (
+        a.x < b.x + b.width &&
+        a.x + a.width > b.x &&
+        a.y < b.y + b.height &&
+        a.y + a.height > b.y
+      );
+    }
+
+    function checkCollisions() {
+      for (let i = enemies.length - 1; i >= 0; i--) {
+        const enemy = enemies[i];
+        for (let j = bullets.length - 1; j >= 0; j--) {
+          const bullet = bullets[j];
+          if (rectsIntersect(enemy, bullet)) {
+            enemies.splice(i, 1);
+            bullets.splice(j, 1);
+
+            score += 100;
+            combo += 1;
+            maxCombo = Math.max(maxCombo, combo);
+
+            scoreElement.textContent = score;
+            comboElement.textContent = combo;
+
+            // hit effect
+            hitEffects.push({ x: enemy.x, y: enemy.y, life: 20 });
+            break;
+          }
+        }
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // background road
+      ctx.fillStyle = "#707070";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // player
+      ctx.drawImage(images.player, player.x, player.y, player.width, player.height);
+
+      // bullets
+      bullets.forEach((b) => {
+        ctx.drawImage(images.bullet, b.x, b.y, b.width, b.height);
+      });
+
+      // enemies
+      enemies.forEach((e) => {
+        ctx.drawImage(images.enemy, e.x, e.y, e.width, e.height);
+      });
+
+      // hit effects
+      for (let i = hitEffects.length - 1; i >= 0; i--) {
+        const h = hitEffects[i];
+        ctx.globalAlpha = h.life / 20;
+        ctx.drawImage(images.flash1, h.x, h.y, 80, 80);
+        ctx.globalAlpha = 1;
+        h.life -= 1;
+        if (h.life <= 0) hitEffects.splice(i, 1);
+      }
+    }
+
+    function endGame(win) {
+      gameOver = true;
+      battleSound.pause();
+      endSound.currentTime = 0;
+      endSound.play().catch(() => {});
+
+      // show result
+      resultOverlay.classList.add("show");
+      resultScore.textContent = score;
+      resultCombo.textContent = maxCombo;
+
+      if (win) {
+        resultImage.src = "/assets/bangdream/img/win.png";
+      } else {
+        resultImage.src = "/assets/bangdream/img/defeat.png";
+      }
+
+      // rank
+      const r = score >= 5000 ? "SS" : score >= 3000 ? "S" : score >= 1500 ? "A" : "B";
+      const rankMap = {
+        A: "/assets/bangdream/img/rank_a.png",
+        B: "/assets/bangdream/img/rank_b.png",
+        S: "/assets/bangdream/img/rank_s.png",
+        SS: "/assets/bangdream/img/rank_ss.png",
+      };
+      resultRankImage.src = rankMap[r];
+      resultRankImage.style.display = "inline-block";
+
+      // full combo
+      if (maxCombo >= 30) {
+        resultFullComboImage.style.display = "inline-block";
+      } else {
+        resultFullComboImage.style.display = "none";
+      }
+    }
+
+    let frameCount = 0;
+    function gameLoop() {
+      if (!gameStarted || gameOver) return;
+      frameCount++;
+
+      updatePlayer();
+      updateBullets();
+      updateEnemies(frameCount);
+      checkCollisions();
+      draw();
+
+      // win condition: score
+      if (score >= 6000) {
+        endGame(true);
+        return;
+      }
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    // Start menu music
+    menuSound.play().catch(() => {});
+  </script>
+</body>
+</html>

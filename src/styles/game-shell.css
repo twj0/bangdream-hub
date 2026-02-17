@@ -111,6 +111,46 @@
   color: #d8dcff;
 }
 
+/* Embedded reference games (mobile-first) */
+.bdhub-embed-game {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.bdhub-embed-frame-wrap {
+  width: 100%;
+  border: 1px solid #2a2f4f;
+  border-radius: 12px;
+  background: #0f1220;
+  overflow: hidden;
+}
+
+.bdhub-embed-frame {
+  display: block;
+  width: 100%;
+  height: min(82vh, 820px);
+  border: 0;
+  background: #000;
+}
+
+@media (max-width: 600px) {
+  .bdhub-shell-content {
+    padding: 0.75rem;
+  }
+
+  .bdhub-game-topbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bdhub-embed-frame {
+    height: min(86vh, 860px);
+  }
+}
+
+/* Legacy self-implemented games (kept for now) */
+
 /* Note Shooter */
 .bdhub-note-stage {
   position: relative;
