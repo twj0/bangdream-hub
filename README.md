@@ -1,16 +1,3 @@
-# KiloCode Game Hub
-
-A lightweight game hub built with Vite and TypeScript.
-
-## Project Goal
-
-KiloCode provides a small, standardized shell to host mini games through a unified adapter protocol.
-
-Core ideas:
-- Hub page lists all available games.
-- Router switches between hub and selected game.
-- Each game is integrated via a `GameAdapter`.
-
 ## Attribution / Sources
 
 This repository is a **front-end aggregation shell** that hosts mini games in a single website.
