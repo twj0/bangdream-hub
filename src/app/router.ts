@@ -20,10 +20,11 @@ function getRouteFromLocation(): RouteState {
     return { type: 'hub' };
   }
 
-  // 允许直接用 /shoot /pazuru 这类短路径
+  // 允许直接用 /shoot /pazuru /klotski 这类短路径
   const alias: Record<string, string> = {
     shoot: 'note-shooter',
     pazuru: 'puzzle-pico',
+    klotski: 'bang-klotski',
   };
 
   const mapped = alias[seg] ?? seg;
@@ -55,6 +56,7 @@ export function createRouter(options: RouterOptions) {
     const aliasById: Record<string, string> = {
       'note-shooter': 'shoot',
       'puzzle-pico': 'pazuru',
+      'bang-klotski': 'klotski',
     };
     const path = aliasById[gameId] ?? gameId;
 

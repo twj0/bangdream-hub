@@ -5,6 +5,7 @@ This repository is a **front-end aggregation shell** that hosts mini games in a 
 Original/upstream repositories:
 - Shooter source: https://github.com/zfkdiyi/bangdream
 - Puzzle source: https://github.com/hamzaabamboo/pazuru-pico
+- Klotski source: (local vendored copy) `_reference/_repo/BanGKlotski`
 
 ## Tech Stack
 
@@ -52,11 +53,13 @@ This project uses **path-based** routing (History API) with short aliases:
 - Games:
   - `/<base>/shoot` → Note Shooter (Bangdream)
   - `/<base>/pazuru` → Puzzle Pico
+  - `/<base>/klotski` → BanG Klotski
 
 GitHub Pages example:
 - https://twj0.github.io/bangdream-hub/
 - https://twj0.github.io/bangdream-hub/shoot
 - https://twj0.github.io/bangdream-hub/pazuru
+- https://twj0.github.io/bangdream-hub/klotski
 
 Spec: [`docs/ROUTING-SPEC.md`](docs/ROUTING-SPEC.md)
 
@@ -74,6 +77,8 @@ src/
     note-shooter/
       adapter.ts         # Game adapter
     puzzle-pico/
+      adapter.ts         # Game adapter
+    bang-klotski/
       adapter.ts         # Game adapter
   hub/
     game-registry.ts     # Registered game list and lookup
@@ -106,9 +111,10 @@ public/
 ## Current Status
 
 - Version: `0.1.0`
-- Two games are integrated:
+- Three games are integrated:
   - `note-shooter` (alias: `shoot`)
   - `puzzle-pico` (alias: `pazuru`)
+  - `bang-klotski` (alias: `klotski`)
 
 ## License
 

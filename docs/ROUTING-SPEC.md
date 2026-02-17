@@ -4,7 +4,7 @@
 
 This document defines route states, navigation rules, URL mapping, and fallback behavior for Bangdream Hub.
 
-Source implementation: [`createRouter()`](src/app/router.ts:42)
+Source implementation: [`createRouter()`](src/app/router.ts:37)
 
 ## Route Model
 
@@ -25,6 +25,7 @@ The router is **path-based** (History API), not hash-based.
 - Game shortcuts (aliases):
   - `/<base>/shoot` → `gameId = note-shooter`
   - `/<base>/pazuru` → `gameId = puzzle-pico`
+  - `/<base>/klotski` → `gameId = bang-klotski`
 
 `<base>` is the deployed base path (GitHub Pages typically uses `/<repo>/`). The router uses relative pushes (e.g. `./shoot`) so it works under any base.
 
@@ -33,6 +34,7 @@ The router is **path-based** (History API), not hash-based.
 Directly opening the shortcut URL will go to the correct game:
 - `.../bangdream-hub/shoot`
 - `.../bangdream-hub/pazuru`
+- `.../bangdream-hub/klotski`
 
 This is handled by [`getRouteFromLocation()`](src/app/router.ts:15).
 
@@ -72,7 +74,7 @@ Router exposes:
 
 The router listens to `popstate` and re-renders the appropriate state.
 
-Implementation: [`createRouter()` popstate listener](src/app/router.ts:71)
+Implementation: [`createRouter()` popstate listener](src/app/router.ts:67)
 
 ## Validation and Fallback
 
@@ -103,6 +105,7 @@ Shell responsibilities:
 - Opening `/<base>/` renders hub.
 - Opening `/<base>/shoot` loads `note-shooter`.
 - Opening `/<base>/pazuru` loads `puzzle-pico`.
+- Opening `/<base>/klotski` loads `bang-klotski`.
 - `goGame(invalidId)` falls back to hub.
 - Browser back/forward switches between hub/game without leaving mounted state behind.
 
