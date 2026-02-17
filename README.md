@@ -5,7 +5,7 @@ This repository is a **front-end aggregation shell** that hosts mini games in a 
 Original/upstream repositories:
 - Shooter source: https://github.com/zfkdiyi/bangdream
 - Puzzle source: https://github.com/hamzaabamboo/pazuru-pico
-- Klotski source: (local vendored copy) `_reference/_repo/BanGKlotski`
+- Klotski source: https://github.com/fflow2023/BanGKlotski
 
 ## Tech Stack
 
@@ -107,16 +107,3 @@ public/
 - Keep `GameAdapter` contract stable and explicit.
 - Add game features through adapters, not shell hacks.
 - Keep router behavior deterministic and testable.
-
-## Current Status
-
-- Version: `0.1.0`
-- Three games are integrated:
-  - `note-shooter` (alias: `shoot`)
-  - `puzzle-pico` (alias: `pazuru`)
-  - `bang-klotski` (alias: `klotski`)
-
-## License
-
-Internal project. Add license policy before public release.
-
