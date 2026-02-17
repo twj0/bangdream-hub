@@ -4,7 +4,7 @@ This repository is a **front-end aggregation shell** that hosts mini games in a 
 
 Original/upstream repositories:
 - Shooter source: https://github.com/zfkdiyi/bangdream
-- Puzzle (tetris-like) source: https://github.com/hamzaabamboo/pazuru-pico
+- Puzzle source: https://github.com/hamzaabamboo/pazuru-pico
 
 ## Tech Stack
 
@@ -43,6 +43,23 @@ npm run build
 npm run preview
 ```
 
+## Routes (Shareable URLs)
+
+This project uses **path-based** routing (History API) with short aliases:
+
+- Hub:
+  - `/<base>/`
+- Games:
+  - `/<base>/shoot` → Note Shooter (Bangdream)
+  - `/<base>/pazuru` → Puzzle Pico
+
+GitHub Pages example:
+- https://twj0.github.io/bangdream-hub/
+- https://twj0.github.io/bangdream-hub/shoot
+- https://twj0.github.io/bangdream-hub/pazuru
+
+Spec: [`docs/ROUTING-SPEC.md`](docs/ROUTING-SPEC.md)
+
 ## Directory Structure
 
 ```text
@@ -66,15 +83,18 @@ src/
     hub.css
     game-shell.css
   main.ts
+public/
+  assets/                # Copied upstream assets
+  games/                 # Embedded upstream pages (static)
 ```
 
 ## Architecture Docs
 
-- `docs/ARCHITECTURE.md`
-- `docs/GAME-ADAPTER-SPEC.md`
-- `docs/ROUTING-SPEC.md`
-- `docs/CONTRIBUTING.md`
-- `docs/ROADMAP.md`
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+- [`docs/GAME-ADAPTER-SPEC.md`](docs/GAME-ADAPTER-SPEC.md)
+- [`docs/ROUTING-SPEC.md`](docs/ROUTING-SPEC.md)
+- [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md)
+- [`docs/ROADMAP.md`](docs/ROADMAP.md)
 
 ## Development Principles
 
@@ -87,9 +107,10 @@ src/
 
 - Version: `0.1.0`
 - Two games are integrated:
-  - `note-shooter`
-  - `puzzle-pico`
+  - `note-shooter` (alias: `shoot`)
+  - `puzzle-pico` (alias: `pazuru`)
 
 ## License
 
 Internal project. Add license policy before public release.
+

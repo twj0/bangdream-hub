@@ -2,9 +2,9 @@
 
 ## Purpose
 
-This document defines route states, navigation rules, and fallback behavior for KiloCode Game Hub.
+This document defines route states, navigation rules, URL mapping, and fallback behavior for Bangdream Hub.
 
-Source implementation: `src/app/router.ts`
+Source implementation: [`createRouter()`](src/app/router.ts:42)
 
 ## Route Model
 
@@ -15,6 +15,26 @@ type RouteState =
   | { type: 'hub' }
   | { type: 'game'; gameId: string };
 ```
+
+## URL Strategy (Implemented)
+
+The router is **path-based** (History API), not hash-based.
+
+- Hub (catalog):
+  - `/<base>/` (GitHub Pages example: `https://twj0.github.io/bangdream-hub/`)
+- Game shortcuts (aliases):
+  - `/<base>/shoot` → `gameId = note-shooter`
+  - `/<base>/pazuru` → `gameId = puzzle-pico`
+
+`<base>` is the deployed base path (GitHub Pages typically uses `/<repo>/`). The router uses relative pushes (e.g. `./shoot`) so it works under any base.
+
+### Deep-linking
+
+Directly opening the shortcut URL will go to the correct game:
+- `.../bangdream-hub/shoot`
+- `.../bangdream-hub/pazuru`
+
+This is handled by [`getRouteFromLocation()`](src/app/router.ts:15).
 
 ## Current Navigation API
 
@@ -40,16 +60,24 @@ Router exposes:
 
 ## Transition Rules
 
-- Initial transition: `start()` must enter `hub`.
+- Initial transition:
+  - `start()` enters either:
+    - `hub`, or
+    - a `game` state when the current URL path matches a valid shortcut.
 - `hub -> game`: allowed only when `gameId` exists in registry.
 - `game -> hub`: always allowed.
 - `game -> game`: implemented as `goGame(nextId)` after cleanup by shell.
 
+## Browser Navigation (Back/Forward)
+
+The router listens to `popstate` and re-renders the appropriate state.
+
+Implementation: [`createRouter()` popstate listener](src/app/router.ts:71)
+
 ## Validation and Fallback
 
-- If `goGame(gameId)` cannot find matching game, router must fallback to `goHub()`.
-- Router must emit route changes only with valid `RouteState` values.
-- Invalid target must not leave app in partial state.
+- If `goGame(gameId)` cannot find matching game, router falls back to `goHub()`.
+- If path segment is unknown, `start()` falls back to hub.
 
 ## Rendering Contract
 
@@ -70,25 +98,13 @@ Shell responsibilities:
 - Adapter mount failure: shell should show error-safe fallback and allow return to hub.
 - Unknown runtime exception: preserve ability to navigate back to hub.
 
-## Future URL Strategy (Planned)
-
-Current implementation is in-memory route state.
-Planned URL mapping:
-- `#/` -> hub
-- `#/game/:gameId` -> game
-
-Additional planned behaviors:
-- Browser back/forward synchronization.
-- 404 route for unknown paths.
-- Optional query params for game mode/state.
-
 ## Test Cases (Minimum)
 
-- `start()` enters `hub`.
-- `goGame(validId)` enters `game` with matching id.
-- `goGame(invalidId)` falls back to `hub`.
-- `getState()` always returns latest route state.
-- Repeated `goHub()` remains stable.
+- Opening `/<base>/` renders hub.
+- Opening `/<base>/shoot` loads `note-shooter`.
+- Opening `/<base>/pazuru` loads `puzzle-pico`.
+- `goGame(invalidId)` falls back to hub.
+- Browser back/forward switches between hub/game without leaving mounted state behind.
 
 ## Non-Goals (Current Stage)
 
