@@ -1,5 +1,17 @@
 import type { GameAdapter } from '../_types/game-adapter';
 
+function withBase(url: string) {
+  // GitHub Pages 下常见 base 为 /<repo>/，这里自动前缀，避免 iframe 走错根路径
+  const base = import.meta.env.BASE_URL || '/';
+  if (/^https?:\/\//i.test(url)) {
+    return url;
+  }
+  if (url.startsWith('/')) {
+    return base.replace(/\/$/, '') + url;
+  }
+  return base + url;
+}
+
 function createEmbeddedGame(
   pageUrl: string,
   opts?: {
@@ -7,6 +19,8 @@ function createEmbeddedGame(
     subtitle?: string;
   }
 ) {
+  const resolvedUrl = withBase(pageUrl);
+
   return {
     mount(container: HTMLElement) {
       const root = document.createElement('div');
@@ -18,11 +32,11 @@ function createEmbeddedGame(
             ${opts?.subtitle ? `<p class="bdhub-game-subtitle">${opts.subtitle}</p>` : ''}
           </div>
           <div class="bdhub-game-actions">
-            <a class="bdhub-btn" href="${pageUrl}" target="_blank" rel="noopener noreferrer">新窗口打开</a>
+            <a class="bdhub-btn" href="${resolvedUrl}" target="_blank" rel="noopener noreferrer">新窗口打开</a>
           </div>
         </div>
         <div class="bdhub-embed-frame-wrap">
-          <iframe class="bdhub-embed-frame" title="${opts?.title ?? 'Game'}" src="${pageUrl}" loading="eager" referrerpolicy="no-referrer"></iframe>
+          <iframe class="bdhub-embed-frame" title="${opts?.title ?? 'Game'}" src="${resolvedUrl}" loading="eager" referrerpolicy="no-referrer"></iframe>
         </div>
       `;
 
@@ -33,14 +47,14 @@ function createEmbeddedGame(
 
       // debug: 记录实际加载URL（便于排查GitHub Pages base路径等问题）
       // eslint-disable-next-line no-console
-      console.info(`[bdhub] embed mount: ${pageUrl}`);
+      console.info(`[bdhub] embed mount: ${resolvedUrl}`);
       frame.addEventListener('load', () => {
         // eslint-disable-next-line no-console
-        console.info(`[bdhub] embed loaded: ${pageUrl}`);
+        console.info(`[bdhub] embed loaded: ${resolvedUrl}`);
       });
       frame.addEventListener('error', () => {
         // eslint-disable-next-line no-console
-        console.error(`[bdhub] embed error: ${pageUrl}`);
+        console.error(`[bdhub] embed error: ${resolvedUrl}`);
       });
 
       container.append(root);
@@ -56,7 +70,7 @@ function createEmbeddedGame(
 
 export function createNoteShooterAdapter(): GameAdapter {
   const id = 'note-shooter';
-  const pageUrl = '/games/bangdream/index.html';
+  const pageUrl = 'games/bangdream/index.html';
 
   let root: HTMLDivElement | null = null;
   let cleanup: (() => void) | null = null;
@@ -77,9 +91,8 @@ export function createNoteShooterAdapter(): GameAdapter {
       root = null;
       cleanup = unmount;
 
-      // 额外提示资源路径（便于排查静态资源是否成功复制）
       // eslint-disable-next-line no-console
-      console.info('[bdhub] bangdream assets root:', '/assets/bangdream/img/');
+      console.info('[bdhub] bangdream assets root:', withBase('assets/bangdream/img/'));
     },
     unmount() {
       cleanup?.();
