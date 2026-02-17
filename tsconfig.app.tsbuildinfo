@@ -1,0 +1,1 @@
+{"root":["./src/main.ts","./src/app/router.ts","./src/app/shell.ts","./src/games/_types/game-adapter.ts","./src/games/_types/game-meta.ts","./src/games/note-shooter/adapter.ts","./src/games/puzzle-pico/adapter.ts","./src/hub/game-registry.ts","./src/hub/hub-page.ts"],"version":"5.9.3"}

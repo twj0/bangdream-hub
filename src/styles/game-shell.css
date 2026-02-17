@@ -1,0 +1,211 @@
+.bdhub-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.bdhub-shell-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #2a2f4f;
+  background: #11162f;
+}
+
+.bdhub-shell-title {
+  font-weight: 700;
+}
+
+.bdhub-back-button {
+  border: 1px solid #3d4572;
+  background: #202a56;
+  color: #f4f6ff;
+  border-radius: 8px;
+  padding: 0.4rem 0.7rem;
+  cursor: pointer;
+}
+
+.bdhub-shell-content {
+  padding: 1rem;
+}
+
+.bdhub-game-placeholder {
+  border: 1px dashed #5561a3;
+  border-radius: 12px;
+  padding: 1rem;
+  background: #1a2040;
+}
+
+/* Shared game UI */
+.bdhub-game-topbar {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.bdhub-game-title h2 {
+  margin: 0;
+}
+
+.bdhub-game-subtitle {
+  margin: 0.25rem 0 0;
+  color: #d8dcff;
+}
+
+.bdhub-game-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.bdhub-inline {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.bdhub-btn {
+  border: 1px solid #3d4572;
+  background: #202a56;
+  color: #f4f6ff;
+  border-radius: 8px;
+  padding: 0.4rem 0.7rem;
+  cursor: pointer;
+}
+
+.bdhub-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.bdhub-select {
+  border: 1px solid #3d4572;
+  background: #11162f;
+  color: #f4f6ff;
+  border-radius: 8px;
+  padding: 0.35rem 0.5rem;
+}
+
+.bdhub-game-hud {
+  margin-top: 0.75rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 0.75rem;
+  border: 1px solid #2a2f4f;
+  border-radius: 12px;
+  background: #11162f;
+}
+
+.bdhub-game-state {
+  font-weight: 700;
+  color: #fff;
+}
+
+.bdhub-game-tip {
+  color: #d8dcff;
+}
+
+/* Note Shooter */
+.bdhub-note-stage {
+  position: relative;
+  border: 1px solid #2a2f4f;
+  border-radius: 12px;
+  background: radial-gradient(1200px 400px at 50% 0%, #1a2040, #0f1220);
+  height: 360px;
+  outline: none;
+}
+
+.bdhub-note-lanes {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.bdhub-note-lane {
+  position: relative;
+  overflow: hidden;
+  border-right: 1px dashed #2a2f4f;
+}
+
+.bdhub-note-lane:last-child {
+  border-right: none;
+}
+
+.bdhub-note-hitline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 18px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  pointer-events: none;
+}
+
+.bdhub-note-hitbox {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 44px;
+  border-top: 1px solid #2a2f4f;
+  background: rgba(17, 22, 47, 0.7);
+}
+
+.bdhub-note-hitbox span {
+  opacity: 0.9;
+  font-weight: 700;
+}
+
+.bdhub-note {
+  position: absolute;
+  left: 50%;
+  width: 60%;
+  height: 18px;
+  transform: translate(-50%, 0);
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ff4fd8, #7c6cff);
+  box-shadow: 0 8px 24px rgba(124, 108, 255, 0.25);
+  transition: opacity 120ms ease, transform 120ms ease;
+  will-change: transform;
+  top: 0;
+}
+
+.bdhub-note.is-near {
+  filter: brightness(1.15);
+}
+
+.bdhub-note.is-hit {
+  opacity: 0;
+  transform: translate(-50%, 0) scale(1.25);
+}
+
+/* Puzzle Pico */
+.bdhub-puzzle-board {
+  --bdhub-grid-size: 4;
+  display: grid;
+  grid-template-columns: repeat(var(--bdhub-grid-size), 1fr);
+  gap: 0.5rem;
+  max-width: 520px;
+}
+
+.bdhub-puzzle-cell {
+  aspect-ratio: 1;
+  border-radius: 12px;
+  border: 1px solid #2a2f4f;
+  background: #11162f;
+  color: #d8dcff;
+  cursor: pointer;
+}
+
+.bdhub-puzzle-cell.is-on {
+  background: #202a56;
+  color: #ffffff;
+  border-color: #5561a3;
+}
